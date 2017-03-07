@@ -2,25 +2,16 @@ package com.lge.contactaddingapp;
 
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
-import android.media.Image;
 import android.net.Uri;
 import android.os.RemoteException;
-import android.provider.BaseColumns;
-import android.provider.Contacts;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.Editable;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.content.ContentProviderOperation;
-import android.content.ContentProviderResult;
-import android.content.Context;
 import android.content.OperationApplicationException;
-import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.CommonDataKinds.StructuredName;
@@ -40,7 +31,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        final EditText editText = (EditText)findViewById(R.id.editText);
+        final EditText editText = (EditText)findViewById(R.id.phonenumfield);
+        final EditText editText2 = (EditText)findViewById(R.id.simnumfield);
         final Context cntx = getApplicationContext();
 
 
@@ -49,14 +41,17 @@ public class MainActivity extends AppCompatActivity {
             // Pass below variable <em>cntx</em> into the WritePhoneContact() function as third variable.
 		 // get application context
             //Now call below function to do the real task for you.
-        ImageButton imgbtn = (ImageButton)findViewById(R.id.imageButton);
+        ImageButton imgbtn = (ImageButton)findViewById(R.id.simaddbutton);
         imgbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String phoneNumber = editText.getText().toString();
+                String simphoneNumber = editText2.getText().toString();
                 if(!phoneContactExists(cntx,"TARGETA")){
-                    WritePhoneContact("TARGETA", phoneNumber ,cntx);
-               }else{
+                    WritePhoneContact("TARGETA", phoneNumber,PHONE_ACCOUNT_NAME ,cntx);
+               }else if(!simContactExists(cntx,"TARGETB")){
+                    WritePhoneContact("TARGETB", simphoneNumber,SIM_ACCOUNT_NAME ,cntx);
+                } else{
                     Toast.makeText(getApplicationContext(),"Contact Found",Toast.LENGTH_SHORT).show();
                }
 
@@ -127,14 +122,18 @@ public class MainActivity extends AppCompatActivity {
         return findContact(mContext, inStr, PHONE_ACCOUNT_NAME);
     } //e.o.phoneContactExists
 
+    public static boolean simContactExists(Context mContext, String str_contactname) {
+        return findContact(mContext, str_contactname.toString(), SIM_ACCOUNT_NAME);
+    } //e.o.simContactExists
 
 
 
-    public void WritePhoneContact(String displayName, String number,Context cntx /*App or Activity Ctx*/)
+    public void WritePhoneContact(String displayName, String number,String ACC_NAME,Context cntx /*App or Activity Ctx*/)
     {
         Context contetx 	= cntx; //Application's context or Activity's context
         String strDisplayName 	=  displayName; // Name of the Person to add
         String strNumber 	=  number; //number of the person to add with the Contact
+        String PHONEACC_NAME = ACC_NAME;
 
         ArrayList<ContentProviderOperation> cntProOper = new ArrayList<ContentProviderOperation>();
         int contactIndex = cntProOper.size();//ContactSize
@@ -142,8 +141,8 @@ public class MainActivity extends AppCompatActivity {
         //Newly Inserted contact
      // A raw contact will be inserted ContactsContract.RawContacts table in contacts database.
         cntProOper.add(ContentProviderOperation.newInsert(RawContacts.CONTENT_URI)//Step1
-                .withValue(RawContacts.ACCOUNT_TYPE, PHONE_ACCOUNT_NAME)
-                .withValue(RawContacts.ACCOUNT_NAME, PHONE_ACCOUNT_NAME).build());
+                .withValue(RawContacts.ACCOUNT_TYPE, PHONEACC_NAME)
+                .withValue(RawContacts.ACCOUNT_NAME, PHONEACC_NAME).build());
 
         //Display name will be inserted in ContactsContract.Data table
         cntProOper.add(ContentProviderOperation.newInsert(Data.CONTENT_URI)//Step2
@@ -173,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
         {
             //logs
         }
-    }
+    } // E.O. WritePhoneContact
 
 
 
